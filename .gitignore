@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+dist/
+build/
+
+# Environment
+.env
+
+# Data (raw files are too large for Git)
+data/raw/
+
+# Models (binary files)
+models/*.joblib
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Node (frontend/extension)
+node_modules/

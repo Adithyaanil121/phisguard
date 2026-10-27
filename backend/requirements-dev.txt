@@ -1,0 +1,5 @@
+-r requirements-training.txt
+pytest>=8.0,<9.0
+pytest-asyncio>=0.23,<1.0
+ruff>=0.5
+pre-commit>=3.5
