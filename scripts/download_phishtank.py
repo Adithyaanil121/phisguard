@@ -84,8 +84,8 @@ def download_phishtank(output_dir: str = "data/raw") -> None:
     # Filter: verified + online
     filtered = [
         r for r in rows
-        if r.get("verified", "").strip().lower() == "yes"
-        and r.get("online", "").strip().lower() == "yes"
+        if (r.get("verified") or "").strip().lower() == "yes"
+        and (r.get("online") or "").strip().lower() == "yes"
     ]
 
     with output_path.open("w", newline="", encoding="utf-8") as f:

@@ -15,16 +15,17 @@ Manifest: data/manifests/download_log.json (appended)
 import argparse
 import csv
 import hashlib
+import io
 import json
 import sys
+import zipfile
 from datetime import UTC, datetime
 from pathlib import Path
 
 import httpx
 
-# Tranco provides a stable daily list via their API
+# Tranco top 1M zip archive
 TRANCO_URL = "https://tranco-list.eu/top-1m.csv.zip"
-TRANCO_TOP_N_URL = "https://tranco-list.eu/download/top-100k"
 MANIFEST_FILE = "data/manifests/download_log.json"
 
 
@@ -62,20 +63,25 @@ def download_tranco(output_dir: str = "data/raw", top_n: int = 100_000) -> None:
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
-    print(f"[tranco] Downloading top {top_n:,} from Tranco ...")
+    print(f"[tranco] Downloading top {top_n:,} from Tranco ({TRANCO_URL}) ...")
     try:
-        with httpx.Client(timeout=120.0, follow_redirects=True) as client:
-            response = client.get(TRANCO_TOP_N_URL, headers={"User-Agent": "PhishGuard/1.0"})
+        with httpx.Client(timeout=180.0, follow_redirects=True) as client:
+            response = client.get(TRANCO_URL, headers={"User-Agent": "PhishGuard/1.0"})
         response.raise_for_status()
     except httpx.HTTPError as e:
         print(f"[tranco] ERROR: Download failed: {e}", file=sys.stderr)
         sys.exit(1)
 
-    # Tranco CSV format: rank,domain (no header)
-    lines = response.text.strip().splitlines()
+    # Unzip in-memory
+    with zipfile.ZipFile(io.BytesIO(response.content)) as z:
+        # Find the csv filename inside the zip
+        csv_filename = [name for name in z.namelist() if name.endswith(".csv")][0]
+        with z.open(csv_filename) as f:
+            lines = io.TextIOWrapper(f, encoding="utf-8").readlines()
+
     records = []
     for line in lines[:top_n]:
-        parts = line.split(",", 1)
+        parts = line.strip().split(",", 1)
         if len(parts) == 2:
             rank, domain = parts[0].strip(), parts[1].strip()
             records.append({"rank": rank, "domain": domain})
@@ -97,7 +103,7 @@ def download_tranco(output_dir: str = "data/raw", top_n: int = 100_000) -> None:
         "record_count": record_count,
         "sha256": sha256,
         "license": "Free for research (tranco-list.eu)",
-        "url": TRANCO_TOP_N_URL,
+        "url": TRANCO_URL,
         "output_file": str(output_path),
         "note": (
             "Candidate benign only. Domains not guaranteed safe. "

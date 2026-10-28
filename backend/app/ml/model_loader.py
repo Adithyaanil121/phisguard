@@ -1,14 +1,23 @@
-"""Model loading — stub for Phase 0. Full implementation in Phase 2."""
+"""Model loading and inference engine factory."""
 import os
+from typing import Any
 
 import joblib
+import structlog
+
+from .inference import PhishingInference
+
+logger = structlog.get_logger()
 
 
-def load_model(model_path: str):
+def load_model(model_path: str) -> PhishingInference:
     """
-    Attempt to load a trained model.
-    Raises FileNotFoundError if the model file doesn't exist.
+    Load a trained model bundle and return a PhishingInference instance.
+
+    Raises FileNotFoundError if the file does not exist.
     """
     if not os.path.exists(model_path):
         raise FileNotFoundError(f"Model file not found: {model_path}")
-    return joblib.load(model_path)
+
+    bundle: dict[str, Any] = joblib.load(model_path)
+    return PhishingInference(bundle)

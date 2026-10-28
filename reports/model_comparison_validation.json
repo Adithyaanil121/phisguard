@@ -1,0 +1,46 @@
+{
+  "compared_at": "2026-10-28 00:31:32 UTC",
+  "evaluation_split": "validation_eval (50% held-out validation)",
+  "models": {
+    "lr_v1": {
+      "accuracy": 0.9802578565672845,
+      "precision_phishing": 0.9906021025804397,
+      "recall_phishing": 0.9860472490883145,
+      "f1_phishing": 0.9883194278903457,
+      "precision_benign": 0.9246575342465754,
+      "recall_benign": 0.9482001755926251,
+      "f1_macro": 0.9623001560778126,
+      "roc_auc": 0.9952183931534746,
+      "brier_score": 0.016008846793689302,
+      "fpr": 0.05179982440737489,
+      "inference_latency_ms": 0.785,
+      "confusion_matrix": {
+        "tn": 1080,
+        "fp": 59,
+        "fn": 88,
+        "tp": 6219
+      }
+    },
+    "rf_v1": {
+      "accuracy": 0.9783776524308353,
+      "precision_phishing": 0.9880876747141042,
+      "recall_phishing": 0.9863643570635802,
+      "f1_phishing": 0.9872252638260731,
+      "precision_benign": 0.9252173913043479,
+      "recall_benign": 0.9341527655838455,
+      "f1_macro": 0.9584444361943821,
+      "roc_auc": 0.9960758236072271,
+      "brier_score": 0.018007681455403473,
+      "fpr": 0.06584723441615452,
+      "inference_latency_ms": 20.609,
+      "confusion_matrix": {
+        "tn": 1064,
+        "fp": 75,
+        "fn": 86,
+        "tp": 6221
+      }
+    }
+  },
+  "selected_model": "rf_v1",
+  "selection_rationale": "Selected 'rf_v1' based on validation-eval criteria: Phishing Recall = 0.9864, Precision = 0.9881, ROC-AUC = 0.9961, Brier Score = 0.0180, Latency = 20.609 ms/URL."
+}
