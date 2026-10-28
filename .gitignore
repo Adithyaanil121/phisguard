@@ -1,28 +1,50 @@
-# Python
+# Python cache
 __pycache__/
 *.py[cod]
+*$py.class
+
+# Virtual environments
 .venv/
-*.egg-info/
-dist/
-build/
+env/
+venv/
 
-# Environment
+# Environment variables / secrets
 .env
+.env.*
+*.pem
+*.key
+secrets.json
 
-# Data (raw and processed csv files are too large for Git)
-data/raw/
-data/processed/*.csv
-
-# Models (binary files)
-models/*.joblib
-
-# IDE
+# IDE / editor files
 .vscode/
 .idea/
+*.swp
+*.swo
 
-# OS
-Thumbs.db
+# OS files
 .DS_Store
+Thumbs.db
 
-# Node (frontend/extension)
+# Build artifacts
+build/
+dist/
+*.egg-info/
 node_modules/
+
+# Tauri build output
+src-tauri/target/
+
+# Logs
+*.log
+
+# Coverage reports
+htmlcov/
+.coverage
+.coverage.*
+
+# Data directories (optional, may be large)
+data/raw/
+data/processed/
+
+# Model binaries
+models/*.joblib
