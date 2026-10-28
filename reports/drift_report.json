@@ -1,0 +1,136 @@
+{
+  "timestamp": "2026-10-28T01:17:02.837819+00:00",
+  "baseline_dataset": "data\\processed\\train_features.csv",
+  "target_dataset": "data\\processed\\test_features.csv",
+  "features_evaluated": 31,
+  "stable_count": 18,
+  "moderate_shift_count": 6,
+  "significant_drift_count": 7,
+  "model_re_training_recommended": true,
+  "feature_metrics": {
+    "brand_domain_mismatch": {
+      "psi": 0.0,
+      "status": "stable"
+    },
+    "brand_in_subdomain": {
+      "psi": 0.0,
+      "status": "stable"
+    },
+    "digit_ratio": {
+      "psi": 0.3554,
+      "status": "significant_drift"
+    },
+    "dot_count_hostname": {
+      "psi": 0.2491,
+      "status": "moderate_shift"
+    },
+    "excessive_subdomains": {
+      "psi": 0.0,
+      "status": "stable"
+    },
+    "has_at_symbol": {
+      "psi": 0.0,
+      "status": "stable"
+    },
+    "has_base64_pattern": {
+      "psi": 0.0,
+      "status": "stable"
+    },
+    "has_credentials": {
+      "psi": 0.0,
+      "status": "stable"
+    },
+    "has_double_slash_in_path": {
+      "psi": 0.0,
+      "status": "stable"
+    },
+    "has_non_standard_port": {
+      "psi": 0.0,
+      "status": "stable"
+    },
+    "hostname_entropy": {
+      "psi": 0.7759,
+      "status": "significant_drift"
+    },
+    "hostname_length": {
+      "psi": 0.8872,
+      "status": "significant_drift"
+    },
+    "hyphen_count_hostname": {
+      "psi": 0.0432,
+      "status": "stable"
+    },
+    "is_https": {
+      "psi": 0.0,
+      "status": "stable"
+    },
+    "is_ip_address": {
+      "psi": 0.0,
+      "status": "stable"
+    },
+    "is_known_shortener": {
+      "psi": 0.0,
+      "status": "stable"
+    },
+    "path_depth": {
+      "psi": 0.3767,
+      "status": "significant_drift"
+    },
+    "path_length": {
+      "psi": 0.47,
+      "status": "significant_drift"
+    },
+    "punycode_detected": {
+      "psi": 0.0,
+      "status": "stable"
+    },
+    "query_length": {
+      "psi": 0.1451,
+      "status": "moderate_shift"
+    },
+    "query_param_count": {
+      "psi": 0.2347,
+      "status": "moderate_shift"
+    },
+    "redirect_token_in_url": {
+      "psi": 0.0,
+      "status": "stable"
+    },
+    "scheme_mismatch": {
+      "psi": 0.0,
+      "status": "stable"
+    },
+    "slash_count_path": {
+      "psi": 0.2722,
+      "status": "significant_drift"
+    },
+    "special_char_count": {
+      "psi": 0.2244,
+      "status": "moderate_shift"
+    },
+    "subdomain_count": {
+      "psi": 0.2501,
+      "status": "significant_drift"
+    },
+    "suspicious_token_count": {
+      "psi": 0.0,
+      "status": "stable"
+    },
+    "suspicious_tokens_found": {
+      "psi": 0.0,
+      "status": "stable"
+    },
+    "tld_risk_score": {
+      "psi": 0.0,
+      "status": "stable"
+    },
+    "url_entropy": {
+      "psi": 0.2406,
+      "status": "moderate_shift"
+    },
+    "url_length": {
+      "psi": 0.2255,
+      "status": "moderate_shift"
+    }
+  }
+}

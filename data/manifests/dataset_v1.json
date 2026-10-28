@@ -1,0 +1,50 @@
+{
+  "version": "v1",
+  "created": "2026-10-28",
+  "seed": 42,
+  "splits": {
+    "train": {
+      "total": 43388,
+      "phishing": 33344,
+      "benign": 10044
+    },
+    "validation": {
+      "total": 14894,
+      "phishing": 12617,
+      "benign": 2277
+    },
+    "test": {
+      "total": 10936,
+      "phishing": 8800,
+      "benign": 2136
+    }
+  },
+  "sources": {
+    "phishing": [
+      "phishtank"
+    ],
+    "benign": [
+      "tranco"
+    ]
+  },
+  "benign_construction_methods": [
+    "root",
+    "common_path"
+  ],
+  "deduplication": {
+    "exact_duplicates_removed": 2
+  },
+  "domain_exclusions": {
+    "tranco_in_phishtank": 181,
+    "tranco_in_openphish": 0
+  },
+  "label_policy": {
+    "phishing": "PhishTank verified+online entries",
+    "benign": "Tranco top-100K domains, treated as candidate benign, not guaranteed safe"
+  },
+  "inputs": {
+    "phishtank": "data/raw/phishtank_2026-10-28.csv",
+    "tranco": "data/raw/tranco_2026-10-28.csv",
+    "openphish": "data/raw/openphish_2026-10-28.txt"
+  }
+}

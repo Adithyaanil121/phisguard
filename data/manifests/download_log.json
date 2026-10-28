@@ -1,0 +1,31 @@
+[
+  {
+    "source": "openphish",
+    "download_date": "2026-10-28",
+    "record_count": 300,
+    "sha256": "65c1183f8f43eb08f33c3d976bdb6e3adb57e23d5ec8818f610446a7521c1806",
+    "license": "OpenPhish Community Feed (free, non-commercial)",
+    "url": "https://openphish.com/feed.txt",
+    "output_file": "data\\raw\\openphish_2026-10-28.txt",
+    "usage": "HOLDOUT ONLY \u2014 do not use for training or validation. Use as time-separated test evidence and to exclude Tranco domains."
+  },
+  {
+    "source": "tranco",
+    "download_date": "2026-10-28",
+    "record_count": 5000,
+    "sha256": "55f301b915701f83f7eb68e7b7303861a4f46800a41e691ae93b623f4d166abf",
+    "license": "Free for research (tranco-list.eu)",
+    "url": "https://tranco-list.eu/top-1m.csv.zip",
+    "output_file": "data\\raw\\tranco_2026-10-28.csv",
+    "note": "Candidate benign only. Domains not guaranteed safe. Must be excluded if found in any phishing feed."
+  },
+  {
+    "source": "phishtank",
+    "download_date": "2026-10-28",
+    "record_count": 54763,
+    "sha256": "1ad66efabb4219b6dd54a3e6b2ca07ed7abb34ce0df5faba24a6cf13491c6093",
+    "license": "Free with attribution (phishtank.org terms)",
+    "url": "http://data.phishtank.com/data/online-valid.csv",
+    "output_file": "data\\raw\\phishtank_2026-10-28.csv"
+  }
+]

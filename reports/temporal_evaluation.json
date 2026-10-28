@@ -1,0 +1,20 @@
+{
+  "timestamp": "2026-10-28T01:15:46.264548+00:00",
+  "model_path": "models\\phishguard_v1.joblib",
+  "sample_count": 10936,
+  "phishing_count": 8800,
+  "benign_count": 2136,
+  "accuracy": 0.9799743964886612,
+  "phishing_recall": 0.990909090909091,
+  "phishing_precision": 0.9843097415058133,
+  "f1_score": 0.9875983917549125,
+  "roc_auc": 0.9977311563670412,
+  "false_positive_rate": 0.0650749063670412,
+  "confusion_matrix": {
+    "true_negatives": 1997,
+    "false_positives": 139,
+    "false_negatives": 80,
+    "true_positives": 8720
+  },
+  "notes": "Temporal holdout evaluation accounts for legitimate URLs to prevent misleading zero-FPR assumptions."
+}

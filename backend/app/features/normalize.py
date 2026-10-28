@@ -81,7 +81,10 @@ def validate_and_normalize(raw_url: str) -> tuple[str, dict]:
     # Flag credentials in URL (don't silently strip them)
     has_credentials = bool(parsed.username or parsed.password)
 
-    hostname = parsed.hostname.lower()
+    try:
+        hostname = parsed.hostname.encode("idna").decode("ascii").lower()
+    except Exception:
+        hostname = parsed.hostname.lower()
 
     # Check if hostname is an IP address
     is_ipv4 = False

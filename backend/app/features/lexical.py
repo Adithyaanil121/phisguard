@@ -97,7 +97,7 @@ def extract_lexical_features(url: str, components: dict) -> dict[str, int | floa
         "url_entropy": round(shannon_entropy(url), 4),
         # Binary indicators
         "is_ip_address": int(bool(components.get("is_ip_address", False))),
-        "has_at_symbol": int("@" in url),
+        "has_at_symbol": int("@" in url or bool(components.get("has_credentials", False))),
         "has_non_standard_port": int(
             components.get("port") is not None
             and components.get("port") not in (80, 443)

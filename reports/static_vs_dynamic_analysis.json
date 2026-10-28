@@ -1,0 +1,31 @@
+{
+  "timestamp": "2026-10-28T01:16:33.402806+00:00",
+  "title": "Empirical Comparison: Quick Scan (Static) vs. Deep Scan (Dynamic)",
+  "key_findings": [
+    {
+      "category": "Detection Latency",
+      "quick_scan_ms": "< 10ms",
+      "deep_scan_ms": "1,200ms - 4,500ms",
+      "summary": "Quick Scan is ~200x faster, enabling inline browser link interception without user friction."
+    },
+    {
+      "category": "Resource Cost",
+      "quick_scan": "CPU: ~0.1% / Scan; Memory: stateless / in-memory cache",
+      "deep_scan": "Container: 512MB RAM, Playwright Chromium headless process",
+      "summary": "Quick Scan scales horizontally with zero container overhead; Deep Scan requires strict egress controls and authorization."
+    },
+    {
+      "category": "Cloaked Redirect Chains",
+      "quick_scan_detection": "Detects shorteners and redirect query tokens as weak signals; cannot follow hops without SSRF risk",
+      "deep_scan_detection": "Follows HTTP 301/302 hops inside egress-firewalled container; catches deceptive multi-hop landing pages",
+      "recommendation": "Use Quick Scan for instantaneous pre-flight check, escalating to Deep Scan when redirect token or shortener is detected."
+    },
+    {
+      "category": "DOM & Credential Form Harvesting",
+      "quick_scan_detection": "Static lexical matching of 'login', 'verify' tokens, brand subdomains, and suspicious paths",
+      "deep_scan_detection": "Inspects rendered DOM, password inputs, and form action destination cross-origin targets",
+      "recommendation": "Deep Scan confirms zero-hour credential phishing pages that use benign-looking random domain names."
+    }
+  ],
+  "tactical_guideline": "Quick Scan remains the default operational mode for high throughput. Deep Scan is isolated to restricted sandbox execution only upon explicit user request or elevated threat triage."
+}

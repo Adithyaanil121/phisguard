@@ -99,7 +99,7 @@ class PolicyEngine:
         These are facts about the URL, not model predictions.
         """
         flags = []
-        if features.get("has_ip_address"):
+        if features.get("has_ip_address") or features.get("is_ip_address"):
             flags.append("URL uses an IP address instead of a domain name")
         if features.get("has_at_symbol"):
             flags.append("URL contains @ symbol (possible credential embedding)")
