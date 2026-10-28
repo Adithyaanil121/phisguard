@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>PhishGuard Shield</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="popup-container">
+    <div class="popup-header">
+      <div class="header-brand">
+        <span class="shield-icon">🛡️</span>
+        <span class="brand-name">PhishGuard</span>
+      </div>
+      <div id="status-dot" class="status-indicator" title="Backend Status"></div>
+    </div>
+
+    <!-- Active Tab Quick Status -->
+    <div class="current-site-card">
+      <div class="site-label">Active Tab:</div>
+      <div id="current-url" class="site-url">Loading...</div>
+      <button id="scan-current-btn" class="btn-action">Scan Active Tab</button>
+    </div>
+
+    <!-- Manual URL Entry -->
+    <div class="manual-scan-box">
+      <input id="manual-url-input" type="text" placeholder="Or test link manually..." spellcheck="false" />
+      <button id="manual-scan-btn" class="btn-scan">Scan</button>
+    </div>
+
+    <!-- Results Panel -->
+    <div id="popup-results" class="popup-results hidden">
+      <div id="result-badge" class="result-badge">SAFE</div>
+      <div class="score-row">
+        <span>Risk Score:</span>
+        <strong id="result-score">0/100</strong>
+      </div>
+      <div class="score-row">
+        <span>ML Confidence:</span>
+        <strong id="result-ml">--</strong>
+      </div>
+      <div id="result-reasons" class="result-reasons"></div>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

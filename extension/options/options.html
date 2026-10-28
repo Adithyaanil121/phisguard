@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>PhishGuard Shield — Extension Options</title>
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <div class="options-container">
+    <div class="header">
+      <div class="brand">
+        <span class="icon">🛡️</span>
+        <div>
+          <h1>PhishGuard Settings</h1>
+          <p>Local API connection and protection sensitivity</p>
+        </div>
+      </div>
+      <div id="health-badge" class="badge checking">Connecting...</div>
+    </div>
+
+    <form id="settings-form" class="settings-form">
+      <div class="card">
+        <h3>Backend API Connection</h3>
+        <p class="card-desc">Configure local FastAPI backend connection.</p>
+
+        <div class="field">
+          <label for="backend-url">Backend Service URL</label>
+          <input id="backend-url" type="text" value="http://127.0.0.1:8000" required />
+          <small>Default local binding: http://127.0.0.1:8000</small>
+        </div>
+
+        <div class="field">
+          <label for="api-key">Local API Key (PHISHGUARD_API_KEY)</label>
+          <input id="api-key" type="password" value="pg_dev_8f2a1b9c4e7d0f3a6b5c2e1d8f4a7b0c" required />
+          <small>Required to authorize local API scan requests</small>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Protection Policy</h3>
+        <p class="card-desc">Configure automated response actions.</p>
+
+        <div class="checkbox-field">
+          <label>
+            <input id="block-phishing" type="checkbox" checked />
+            <span>Block high risk and phishing links immediately</span>
+          </label>
+        </div>
+
+        <div class="checkbox-field">
+          <label>
+            <input id="warn-suspicious" type="checkbox" checked />
+            <span>Show warning on suspicious URLs</span>
+          </label>
+        </div>
+
+        <div class="field">
+          <label for="cache-ttl">Result Cache Duration (Minutes)</label>
+          <input id="cache-ttl" type="number" min="1" max="1440" value="15" />
+        </div>
+      </div>
+
+      <div class="actions">
+        <button type="submit" class="btn-save">Save Settings</button>
+        <span id="save-status" class="save-status hidden">✓ Saved successfully</span>
+      </div>
+    </form>
+  </div>
+
+  <script src="options.js"></script>
+</body>
+</html>

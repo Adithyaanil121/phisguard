@@ -1,0 +1,34 @@
+{
+  "manifest_version": 3,
+  "name": "PhishGuard — AI Phishing Shield",
+  "version": "1.0.0",
+  "description": "Zero-hour phishing link detection with local AI classification and real-time click protection.",
+  "permissions": [
+    "activeTab",
+    "storage",
+    "scripting"
+  ],
+  "host_permissions": [
+    "http://127.0.0.1:8000/*",
+    "http://localhost:8000/*"
+  ],
+  "background": {
+    "service_worker": "background/service_worker.js"
+  },
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_title": "PhishGuard Security Scanner"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content/link_interceptor.js"],
+      "css": ["content/warning_modal.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  "options_ui": {
+    "page": "options/options.html",
+    "open_in_tab": true
+  }
+}
