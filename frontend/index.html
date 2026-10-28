@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self' data: https:; connect-src 'self' http://127.0.0.1:8000 http://localhost:8000; img-src 'self' data:">
+  <title>PhishGuard — Intelligent Real-Time Phishing Threat Detection</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="background-glow glow-1"></div>
+  <div class="background-glow glow-2"></div>
+
+  <header class="header">
+    <div class="brand">
+      <div class="logo-shield">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          <path d="M9 12l2 2 4-4"/>
+        </svg>
+      </div>
+      <div>
+        <h1 class="logo-title">PhishGuard</h1>
+        <p class="logo-tagline">AI-Powered Zero-Hour URL Security</p>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <div id="backend-status-badge" class="status-pill status-checking">
+        <span class="status-dot"></span>
+        <span id="backend-status-text">Checking backend...</span>
+      </div>
+
+      <button id="settings-btn" class="icon-button" title="API Settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="main-container">
+    <section class="hero-section">
+      <h2 class="hero-title">Evaluate Links with Zero Network Exposure</h2>
+      <p class="hero-subtitle">
+        Quick Scan extracts 31 static lexical & structural features and runs offline calibrated ML classification in &lt;10ms — eliminating SSRF risks.
+      </p>
+
+      <div class="scan-mode-selector">
+        <button id="mode-quick-btn" class="mode-tab active" type="button">
+          <span class="mode-icon">⚡</span>
+          <span>Quick Scan (Default)</span>
+        </button>
+        <button id="mode-deep-btn" class="mode-tab disabled" type="button" title="Deep Scan requires an isolated browser container sandbox">
+          <span class="mode-icon">🛡️</span>
+          <span>Deep Scan (Sandbox)</span>
+          <span class="badge-disabled">Restricted</span>
+        </button>
+      </div>
+
+      <form id="scan-form" class="search-form">
+        <div class="search-bar">
+          <div class="search-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"/>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+          </div>
+          <input
+            id="url-input"
+            type="text"
+            placeholder="Paste suspicious URL here (e.g., https://login.paypal.com.evil.tk/verify)..."
+            autocomplete="off"
+            spellcheck="false"
+            required
+          />
+          <button id="clear-btn" type="button" class="btn-clear hidden" title="Clear input">&times;</button>
+          <button id="scan-submit-btn" type="submit" class="btn-scan">
+            <span class="btn-text">Scan URL</span>
+            <span class="btn-loader hidden"></span>
+          </button>
+        </div>
+      </form>
+
+      <div class="sample-links">
+        <span class="sample-label">Quick test samples:</span>
+        <button class="sample-pill sample-benign" data-url="https://example.com/about">Benign URL</button>
+        <button class="sample-pill sample-suspicious" data-url="https://bit.ly/3xF2k">Shortener (Bit.ly)</button>
+        <button class="sample-pill sample-phishing" data-url="https://login.paypal.com.evil.tk/verify?id=992">Brand Mismatch</button>
+        <button class="sample-pill sample-ip" data-url="http://192.168.1.1/admin/login">IP Address Host</button>
+      </div>
+    </section>
+
+    <!-- Error Banner -->
+    <div id="error-banner" class="error-banner hidden">
+      <span class="error-icon">⚠️</span>
+      <span id="error-message"></span>
+    </div>
+
+    <!-- Scan Results Container -->
+    <section id="results-section" class="results-container hidden">
+      <!-- Top Verdict Card -->
+      <div id="verdict-card" class="verdict-card verdict-no-threat">
+        <div class="verdict-header">
+          <div class="verdict-left">
+            <span id="verdict-badge" class="verdict-badge">NO_KNOWN_THREAT</span>
+            <h3 id="verdict-title" class="verdict-title">No Known Threat Detected</h3>
+            <p id="action-recommendation" class="action-recommendation">Action: ALLOW navigation</p>
+          </div>
+          <div class="verdict-meta">
+            <span id="cached-indicator" class="meta-pill hidden">⚡ Cached</span>
+            <span id="scan-time-pill" class="meta-pill">Latency: -- ms</span>
+            <span id="scan-id-pill" class="meta-pill meta-id">ID: --</span>
+          </div>
+        </div>
+
+        <div class="scanned-url-display">
+          <span class="scanned-label">Target URL:</span>
+          <code id="display-target-url" class="scanned-url-text"></code>
+        </div>
+      </div>
+
+      <!-- Metrics Row -->
+      <div class="metrics-grid">
+        <!-- Risk Score Gauge -->
+        <div class="metric-card">
+          <div class="metric-card-header">
+            <h4>Application Risk Score</h4>
+            <span class="info-tooltip" title="Composite deterministic policy score (0-100)">ⓘ</span>
+          </div>
+          <div class="score-gauge-container">
+            <div class="radial-gauge">
+              <svg viewBox="0 0 120 120" class="gauge-svg">
+                <circle class="gauge-bg" cx="60" cy="60" r="50"></circle>
+                <circle id="gauge-progress" class="gauge-bar" cx="60" cy="60" r="50"></circle>
+              </svg>
+              <div class="gauge-content">
+                <span id="risk-score-value" class="gauge-score">0</span>
+                <span class="gauge-label">/ 100</span>
+              </div>
+            </div>
+            <p id="risk-level-caption" class="metric-caption">Minimal threat indicators detected.</p>
+          </div>
+        </div>
+
+        <!-- Calibrated ML Probability -->
+        <div class="metric-card">
+          <div class="metric-card-header">
+            <h4>Calibrated ML Probability</h4>
+            <span class="info-tooltip" title="Platt-scaled sigmoid probability from offline Random Forest model">ⓘ</span>
+          </div>
+          <div class="ml-prob-container">
+            <div class="ml-prob-value">
+              <span id="ml-prob-percent">0.0%</span>
+            </div>
+            <div class="progress-bar-track">
+              <div id="ml-progress-fill" class="progress-bar-fill" style="width: 0%"></div>
+            </div>
+            <div class="ml-details-list">
+              <div class="ml-detail-item">
+                <span class="detail-label">Model Version:</span>
+                <span id="ml-model-name" class="detail-val">Random Forest (v1.0.0)</span>
+              </div>
+              <div class="ml-detail-item">
+                <span class="detail-label">Model Decision:</span>
+                <span id="ml-decision-text" class="detail-val">Candidate Benign</span>
+              </div>
+              <div class="ml-detail-item">
+                <span class="detail-label">Inference Latency:</span>
+                <span id="ml-latency-val" class="detail-val">&lt; 1 ms</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Policy Reasons -->
+      <div class="evidence-card reasons-card">
+        <h4 class="card-section-title">
+          <span class="section-icon">📋</span> Policy Evaluation Rationale
+        </h4>
+        <ul id="reasons-list" class="reasons-list">
+          <li class="reason-item empty-reasons">No deterministic red flags triggered.</li>
+        </ul>
+      </div>
+
+      <!-- Five Security Evidence Pillars -->
+      <h3 class="pillars-title">Security Evidence Pillars</h3>
+      <div class="pillars-grid">
+        <!-- 1. Static Lexical -->
+        <div class="pillar-card">
+          <div class="pillar-header">
+            <div class="pillar-title-wrap">
+              <span class="pillar-icon">🔤</span>
+              <div>
+                <h5>Static Lexical Features</h5>
+                <span class="pillar-status status-completed">Completed</span>
+              </div>
+            </div>
+          </div>
+          <div id="lexical-features-list" class="pillar-body">
+            <!-- Populated via JS -->
+          </div>
+        </div>
+
+        <!-- 2. Structural & Brand -->
+        <div class="pillar-card">
+          <div class="pillar-header">
+            <div class="pillar-title-wrap">
+              <span class="pillar-icon">🏛️</span>
+              <div>
+                <h5>Structural & Brand Analysis</h5>
+                <span class="pillar-status status-completed">Completed</span>
+              </div>
+            </div>
+          </div>
+          <div id="structural-features-list" class="pillar-body">
+            <!-- Populated via JS -->
+          </div>
+        </div>
+
+        <!-- 3. Machine Learning -->
+        <div class="pillar-card">
+          <div class="pillar-header">
+            <div class="pillar-title-wrap">
+              <span class="pillar-icon">🧠</span>
+              <div>
+                <h5>Calibrated ML Classifier</h5>
+                <span id="pillar-ml-status" class="pillar-status status-completed">Completed</span>
+              </div>
+            </div>
+          </div>
+          <div class="pillar-body">
+            <div class="feature-row">
+              <span class="feat-name">Model Ensemble</span>
+              <span class="feat-val">RandomForest + Platt Scaling</span>
+            </div>
+            <div class="feature-row">
+              <span class="feat-name">Feature Dimensions</span>
+              <span class="feat-val">31 Numeric Features</span>
+            </div>
+            <div class="feature-row">
+              <span class="feat-name">Training Grounding</span>
+              <span class="feat-val">PhishTank + Tranco (Domain Disjoint)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. Reputation Feeds -->
+        <div class="pillar-card">
+          <div class="pillar-header">
+            <div class="pillar-title-wrap">
+              <span class="pillar-icon">🌐</span>
+              <div>
+                <h5>Reputation Blocklists</h5>
+                <span class="pillar-status status-not-checked">Not Checked (Quick Scan)</span>
+              </div>
+            </div>
+          </div>
+          <div class="pillar-body">
+            <p class="pillar-note">
+              External threat reputation lookup is disabled in Quick Scan to maintain local speed and privacy.
+            </p>
+          </div>
+        </div>
+
+        <!-- 5. Sandbox Inspection -->
+        <div class="pillar-card">
+          <div class="pillar-header">
+            <div class="pillar-title-wrap">
+              <span class="pillar-icon">📦</span>
+              <div>
+                <h5>Isolated Browser Sandbox</h5>
+                <span class="pillar-status status-not-run">Not Run (Deep Scan Only)</span>
+              </div>
+            </div>
+          </div>
+          <div class="pillar-body">
+            <p class="pillar-note">
+              Playwright headless execution and TLS handshake inspection only trigger upon explicit Deep Scan authorization with egress controls.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Raw JSON Inspector -->
+      <div class="raw-inspector-card">
+        <button id="toggle-json-btn" class="btn-toggle-json" type="button">
+          <span>Inspect Raw API Response (JSON)</span>
+          <span id="json-arrow">▼</span>
+        </button>
+        <pre id="raw-json-code" class="raw-json-block hidden"></pre>
+      </div>
+    </section>
+  </main>
+
+  <!-- Settings Modal -->
+  <div id="settings-modal" class="modal-overlay hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Backend Configuration & Security</h3>
+        <button id="modal-close-btn" class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="backend-url-input">PhishGuard Backend URL</label>
+          <input id="backend-url-input" type="text" value="http://127.0.0.1:8000" />
+          <small class="form-hint">FastAPI local server address</small>
+        </div>
+        <div class="form-group">
+          <label for="api-key-input">Local Client API Key</label>
+          <input id="api-key-input" type="password" value="pg_dev_8f2a1b9c4e7d0f3a6b5c2e1d8f4a7b0c" />
+          <small class="form-hint">Must match PHISHGUARD_API_KEY environment variable</small>
+        </div>
+        <div class="model-meta-box">
+          <h4>Model Metadata</h4>
+          <pre id="modal-meta-content">Loading metadata...</pre>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="save-settings-btn" class="btn-primary">Save Settings</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
