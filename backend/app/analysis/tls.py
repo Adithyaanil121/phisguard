@@ -32,8 +32,13 @@ def analyze_tls(
     """
     start_time = time.perf_counter()
 
-    # Use strict system trust store; DO NOT disable verification
-    context = ssl.create_default_context()
+    # Use strict system/certifi trust store; DO NOT disable verification
+    try:
+        import certifi
+
+        context = ssl.create_default_context(cafile=certifi.where())
+    except ImportError:
+        context = ssl.create_default_context()
 
     try:
         with (

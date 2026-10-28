@@ -13,6 +13,7 @@ const state = {
   backendUrl: localStorage.getItem("pg_backend_url") || DEFAULT_BACKEND_URL,
   apiKey: localStorage.getItem("pg_api_key") || DEFAULT_API_KEY,
   isScanning: false,
+  scanMode: "quick",
 };
 
 // DOM Elements
@@ -109,11 +110,19 @@ function setupEventListeners() {
     });
   });
 
-  // Deep Scan tooltip/notice
+  // Mode switcher tabs (Quick Scan vs Deep Scan)
+  elements.modeQuickBtn.addEventListener("click", () => {
+    state.scanMode = "quick";
+    elements.modeQuickBtn.classList.add("active");
+    elements.modeDeepBtn.classList.remove("active");
+    hideError();
+  });
+
   elements.modeDeepBtn.addEventListener("click", () => {
-    showError(
-      "Deep Scan is restricted: isolated Playwright container sandbox and network egress controls are required to prevent SSRF."
-    );
+    state.scanMode = "deep";
+    elements.modeDeepBtn.classList.add("active");
+    elements.modeQuickBtn.classList.remove("active");
+    hideError();
   });
 
   // Raw JSON toggle
@@ -202,7 +211,8 @@ async function performScan(url) {
   const startTime = performance.now();
 
   try {
-    const res = await fetch(`${state.backendUrl}/api/v1/check-url`, {
+    const endpoint = state.scanMode === "deep" ? "/api/v1/deep-scan" : "/api/v1/check-url";
+    const res = await fetch(`${state.backendUrl}${endpoint}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -218,7 +228,8 @@ async function performScan(url) {
       throw new Error(errData.detail || `Request failed with status ${res.status}`);
     }
 
-    const data = await res.json();
+    const rawJson = await res.json();
+    const data = rawJson.result || rawJson;
     renderResults(data, elapsedMs);
   } catch (err) {
     showError(err.message || "Unable to reach PhishGuard backend service");
@@ -352,6 +363,49 @@ function renderResults(data, clientLatencyMs) {
 
   // 5. Evidence Pillars
   renderFeatures(data.evidence?.static_analysis?.details || {});
+
+  // 6. TLS Evidence (Deep Scan)
+  const tls = data.evidence?.tls;
+  const pillarTlsStatus = document.getElementById("pillar-tls-status");
+  const tlsBody = document.getElementById("tls-features-body");
+  if (pillarTlsStatus && tlsBody) {
+    if (tls && tls.status === "completed") {
+      const details = tls.details || {};
+      pillarTlsStatus.className = details.valid ? "pillar-status status-completed" : "pillar-status status-failed";
+      pillarTlsStatus.textContent = details.valid ? "Valid Certificate" : "Certificate Invalid";
+      tlsBody.innerHTML = `
+        <div class="feature-row"><span class="feat-name">HTTPS Verified</span><span class="feat-val">${details.valid ? "✓ Yes" : "✗ No"}</span></div>
+        <div class="feature-row"><span class="feat-name">Hostname Match</span><span class="feat-val">${details.hostname_match ? "✓ Match" : "✗ Mismatch"}</span></div>
+        <div class="feature-row"><span class="feat-name">Issuer</span><span class="feat-val">${escapeHtml(details.issuer_common_name || details.issuer_organization || details.error || "N/A")}</span></div>
+        <div class="feature-row"><span class="feat-name">Days Remaining</span><span class="feat-val">${details.days_remaining !== undefined ? details.days_remaining : "N/A"}</span></div>
+      `;
+    } else {
+      pillarTlsStatus.className = "pillar-status status-not-checked";
+      pillarTlsStatus.textContent = "Not Checked (Quick Scan)";
+      tlsBody.innerHTML = `<p class="pillar-note">TLS handshake and certificate chain inspection triggers in Deep Scan mode.</p>`;
+    }
+  }
+
+  // 7. Dynamic Sandbox Evidence (Deep Scan)
+  const sandbox = data.evidence?.dynamic_analysis;
+  const pillarSandboxStatus = document.getElementById("pillar-sandbox-status");
+  const sandboxBody = document.getElementById("sandbox-features-body");
+  if (pillarSandboxStatus && sandboxBody) {
+    if (sandbox && sandbox.status === "completed") {
+      const details = sandbox.details || {};
+      pillarSandboxStatus.className = "pillar-status status-completed";
+      pillarSandboxStatus.textContent = "Sandbox Verified";
+      sandboxBody.innerHTML = `
+        <div class="feature-row"><span class="feat-name">Environment</span><span class="feat-val">${escapeHtml(details.environment || "hardened_sandbox")}</span></div>
+        <div class="feature-row"><span class="feat-name">SSRF Egress Guard</span><span class="feat-val">${details.destination_allowed ? "✓ Safe Public Destination" : "✗ SSRF Blocked"}</span></div>
+        <div class="feature-row"><span class="feat-name">Redirect Hops</span><span class="feat-val">${details.hop_count !== undefined ? details.hop_count : 0} hops</span></div>
+      `;
+    } else {
+      pillarSandboxStatus.className = "pillar-status status-not-run";
+      pillarSandboxStatus.textContent = "Not Run (Deep Scan Only)";
+      sandboxBody.innerHTML = `<p class="pillar-note">Headless DOM inspection and redirect chain tracking execute inside the hardened sandbox.</p>`;
+    }
+  }
 
   // Raw JSON display
   elements.rawJsonCode.textContent = JSON.stringify(data, null, 2);

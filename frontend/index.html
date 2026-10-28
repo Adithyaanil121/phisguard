@@ -52,10 +52,9 @@
           <span class="mode-icon">⚡</span>
           <span>Quick Scan (Default)</span>
         </button>
-        <button id="mode-deep-btn" class="mode-tab disabled" type="button" title="Deep Scan requires an isolated browser container sandbox">
+        <button id="mode-deep-btn" class="mode-tab" type="button" title="Deep Scan adds TLS inspection and sandboxed dynamic analysis">
           <span class="mode-icon">🛡️</span>
-          <span>Deep Scan (Sandbox)</span>
-          <span class="badge-disabled">Restricted</span>
+          <span>Deep Scan (TLS & Sandbox)</span>
         </button>
       </div>
 
@@ -247,20 +246,20 @@
           </div>
         </div>
 
-        <!-- 4. Reputation Feeds -->
+        <!-- 4. TLS Certificate Analysis -->
         <div class="pillar-card">
           <div class="pillar-header">
             <div class="pillar-title-wrap">
-              <span class="pillar-icon">🌐</span>
+              <span class="pillar-icon">🔒</span>
               <div>
-                <h5>Reputation Blocklists</h5>
-                <span class="pillar-status status-not-checked">Not Checked (Quick Scan)</span>
+                <h5>TLS Certificate Analysis</h5>
+                <span id="pillar-tls-status" class="pillar-status status-not-checked">Not Checked (Quick Scan)</span>
               </div>
             </div>
           </div>
-          <div class="pillar-body">
+          <div id="tls-features-body" class="pillar-body">
             <p class="pillar-note">
-              External threat reputation lookup is disabled in Quick Scan to maintain local speed and privacy.
+              TLS handshake and certificate chain inspection triggers in Deep Scan mode.
             </p>
           </div>
         </div>
@@ -272,13 +271,13 @@
               <span class="pillar-icon">📦</span>
               <div>
                 <h5>Isolated Browser Sandbox</h5>
-                <span class="pillar-status status-not-run">Not Run (Deep Scan Only)</span>
+                <span id="pillar-sandbox-status" class="pillar-status status-not-run">Not Run (Deep Scan Only)</span>
               </div>
             </div>
           </div>
-          <div class="pillar-body">
+          <div id="sandbox-features-body" class="pillar-body">
             <p class="pillar-note">
-              Playwright headless execution and TLS handshake inspection only trigger upon explicit Deep Scan authorization with egress controls.
+              Headless DOM inspection and redirect chain tracking execute inside the hardened sandbox.
             </p>
           </div>
         </div>
