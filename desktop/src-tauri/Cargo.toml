@@ -1,0 +1,15 @@
+[package]
+name = "phishguard-desktop"
+version = "1.0.0"
+description = "Lightweight PhishGuard Desktop Agent with System URL Interception"
+edition = "2021"
+
+[dependencies]
+tauri = { version = "1.8", features = ["http-all", "notification"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+reqwest = { version = "0.12", features = ["json"] }
+tokio = { version = "1.38", features = ["full"] }
+
+[build-dependencies]
+tauri-build = { version = "1.5" }
