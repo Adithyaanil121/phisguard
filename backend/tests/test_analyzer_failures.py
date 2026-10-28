@@ -130,8 +130,8 @@ async def test_7_oversized_request_body():
 
 
 @pytest.mark.asyncio
-async def test_8_deep_scan_stub():
-    """Test 8: Deep scan stub -> returns not_available with reason."""
+async def test_8_deep_scan_execution():
+    """Test 8: Deep scan execution -> returns completed status with scan_id and result."""
     transport = httpx.ASGITransport(app=app)
     async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
         response = await client.post(
@@ -141,9 +141,10 @@ async def test_8_deep_scan_stub():
         )
         assert response.status_code == 200
         data = response.json()
-        assert data["status"] == "not_available"
-        assert data["reason"] == "deep_scan_worker_not_implemented"
+        assert data["status"] == "completed"
         assert "scan_id" in data
+        assert data["result"]["scan_mode"] == "deep"
+        assert data["result"]["evidence"]["tls"]["status"] in ("completed", "failed", "timeout")
 
 
 @pytest.mark.asyncio

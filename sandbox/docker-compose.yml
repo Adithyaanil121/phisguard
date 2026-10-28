@@ -1,0 +1,22 @@
+services:
+  deep-scan-worker:
+    build: .
+    read_only: true
+    tmpfs:
+      - /tmp:size=100M
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    # Network restrictions: prevent SSRF to local/private networks
+    networks:
+      - sandbox-net
+
+networks:
+  sandbox-net:
+    driver: bridge
