@@ -5,6 +5,7 @@ import uuid
 from pathlib import Path
 
 from fastapi import APIRouter, Depends, HTTPException, Request
+from pydantic import BaseModel
 
 from ..core.config import Settings, get_settings
 from ..core.limiter import limiter
@@ -304,3 +305,47 @@ async def get_deep_scan(scan_id: str):
             result=DEEP_SCAN_RESULTS[scan_id],
         )
     raise HTTPException(status_code=404, detail="Deep scan ID not found")
+
+
+class FalsePositiveReport(BaseModel):
+    url: str
+    scan_id: str | None = None
+    comments: str | None = None
+    reporter: str | None = None
+
+
+@router.post(
+    "/api/v1/report-fp",
+    dependencies=[Depends(verify_api_key), Depends(verify_origin)],
+)
+async def report_false_positive(body: FalsePositiveReport):
+    """Record a false positive report from user or analyst (Ticket 6.4)."""
+    from datetime import UTC, datetime
+
+    report_id = str(uuid.uuid4())
+    report_entry = {
+        "report_id": report_id,
+        "timestamp": datetime.now(UTC).isoformat(),
+        "url": body.url,
+        "scan_id": body.scan_id,
+        "comments": body.comments,
+        "reporter": body.reporter,
+    }
+
+    reports_file = Path("data/reports/false_positives.json")
+    reports_file.parent.mkdir(parents=True, exist_ok=True)
+
+    existing = []
+    if reports_file.exists():
+        try:
+            with reports_file.open(encoding="utf-8") as f:
+                existing = json.load(f)
+        except Exception:
+            existing = []
+
+    existing.append(report_entry)
+    with reports_file.open("w", encoding="utf-8") as f:
+        json.dump(existing, f, indent=2)
+
+    return {"status": "recorded", "report_id": report_id}
+
