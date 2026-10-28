@@ -30,13 +30,20 @@ async def lifespan(app: FastAPI):
 
     logger.info("startup", host=settings.host, port=settings.port)
 
+    # Initialize in-memory cache and policy engine
+    from .core.cache import ScanCache
+    from .core.policy import PolicyEngine
+
+    app.state.cache = ScanCache(ttl_seconds=settings.cache_ttl_seconds)
+    app.state.policy_engine = PolicyEngine()
+
     # Attempt model load — degraded state if missing, not crash
     try:
         from .ml.model_loader import load_model
 
         model = load_model(settings.model_path)
         app.state.model = model
-        app.state.model_loaded = True
+        app.state.model_loaded = getattr(model, "is_loaded", True)
         logger.info("model_loaded", path=settings.model_path)
     except FileNotFoundError:
         app.state.model = None
@@ -64,6 +71,14 @@ def create_app() -> FastAPI:
         version="1.0.0",
         lifespan=lifespan,
     )
+
+    from .core.cache import ScanCache
+    from .core.policy import PolicyEngine
+
+    app.state.cache = ScanCache(ttl_seconds=settings.cache_ttl_seconds)
+    app.state.policy_engine = PolicyEngine()
+    app.state.model = None
+    app.state.model_loaded = False
 
     # CORS — defense in depth, NOT authentication
     app.add_middleware(

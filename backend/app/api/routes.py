@@ -1,19 +1,25 @@
+"""API routes for PhishGuard."""
+import json
+import time
 import uuid
+from pathlib import Path
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 
 from ..core.config import Settings, get_settings
 from ..core.limiter import limiter
+from ..core.policy import PolicyEngine
 from ..core.security import authorize_deep_scan, verify_api_key, verify_origin
+from ..features import extract_all_features
 from ..features.normalize import URLValidationError, validate_and_normalize
 from ..schemas.analysis import (
-    Action,
     AnalysisResult,
     DeepScanResponse,
     Evidence,
+    EvidenceDetail,
+    EvidenceStatus,
     ScanMode,
     ScanRequest,
-    Verdict,
 )
 
 router = APIRouter()
@@ -21,7 +27,7 @@ router = APIRouter()
 
 @router.get("/health")
 async def health(request: Request, _settings: Settings = Depends(get_settings)):
-    """No authentication required."""
+    """Health check endpoint. No authentication required."""
     model_loaded = getattr(request.app.state, "model_loaded", False)
     return {"status": "ok", "model_loaded": model_loaded}
 
@@ -30,10 +36,23 @@ async def health(request: Request, _settings: Settings = Depends(get_settings)):
     "/model-info",
     dependencies=[Depends(verify_api_key), Depends(verify_origin)],
 )
-async def model_info(settings: Settings = Depends(get_settings)):
+async def model_info(request: Request, settings: Settings = Depends(get_settings)):
+    """Return model metadata and runtime info."""
+    meta_path = Path("models/model_metadata.json")
+    if meta_path.exists():
+        try:
+            with meta_path.open(encoding="utf-8") as f:
+                return json.load(f)
+        except Exception:
+            pass
+
+    model = getattr(request.app.state, "model", None)
+    info = model.model_info() if model and hasattr(model, "model_info") else {}
     return {
         "model_version": settings.model_version,
         "model_path": settings.model_path,
+        "model_loaded": getattr(request.app.state, "model_loaded", False),
+        **info,
     }
 
 
@@ -43,25 +62,103 @@ async def model_info(settings: Settings = Depends(get_settings)):
     dependencies=[Depends(verify_api_key), Depends(verify_origin)],
 )
 @limiter.limit(get_settings().rate_limit_quick)
-async def check_url(request: Request, body: ScanRequest):
-    """Quick Scan — stub in Phase 0, implemented fully in Phase 3."""
+async def check_url(
+    request: Request, body: ScanRequest, settings: Settings = Depends(get_settings)
+):
+    """
+    Quick Scan endpoint (Tickets 3.1 & 3.2).
+
+    1. Cache lookup
+    2. URL validation and normalization
+    3. Static lexical & structural feature extraction
+    4. ML prediction (calibrated probability)
+    5. Policy engine evaluation
+    6. Cache population & return
+    """
+    cache = getattr(request.app.state, "cache", None)
+
+    # Fast cache check by raw input URL
+    if cache:
+        cached_result = cache.get(ScanMode.QUICK, body.url)
+        if cached_result:
+            return cached_result.model_copy(update={"cached": True})
+
+    # 1. URL validation and normalization
     try:
-        normalized_url, _ = validate_and_normalize(body.url)
+        normalized_url, _components = validate_and_normalize(body.url)
     except URLValidationError as e:
         raise HTTPException(status_code=400, detail=str(e)) from e
 
-    # In Phase 0 / degraded mode: ML model is absent, evidence is not_checked
-    return AnalysisResult(
+    # Secondary cache check by normalized URL
+    if cache and normalized_url != body.url:
+        cached_result = cache.get(ScanMode.QUICK, normalized_url)
+        if cached_result:
+            return cached_result.model_copy(update={"cached": True})
+
+    # 2. Extract static features
+    t_feat_start = time.perf_counter()
+    features, _, _ = extract_all_features(normalized_url)
+    feat_latency_ms = (time.perf_counter() - t_feat_start) * 1000
+
+    # 3. ML inference
+    model = getattr(request.app.state, "model", None)
+    phishing_prob = None
+    ml_latency_ms = None
+    if model and getattr(model, "is_loaded", False):
+        t_ml_start = time.perf_counter()
+        phishing_prob = model.predict(features)
+        ml_latency_ms = (time.perf_counter() - t_ml_start) * 1000
+
+    # 4. Evidence compilation
+    evidence = Evidence(
+        static_analysis=EvidenceDetail(
+            status=EvidenceStatus.COMPLETED,
+            details=features,
+            latency_ms=round(feat_latency_ms, 2),
+        ),
+        ml_prediction=EvidenceDetail(
+            status=(
+                EvidenceStatus.COMPLETED
+                if phishing_prob is not None
+                else EvidenceStatus.UNAVAILABLE
+            ),
+            details={"probability": phishing_prob} if phishing_prob is not None else None,
+            latency_ms=round(ml_latency_ms, 2) if ml_latency_ms is not None else None,
+        ),
+        reputation=EvidenceDetail(status=EvidenceStatus.NOT_CHECKED),
+        tls=EvidenceDetail(status=EvidenceStatus.NOT_CHECKED),
+        dynamic_analysis=EvidenceDetail(status=EvidenceStatus.NOT_RUN),
+    )
+
+    # 5. Policy engine evaluation
+    policy_engine: PolicyEngine = (
+        getattr(request.app.state, "policy_engine", None) or PolicyEngine()
+    )
+    verdict, action, risk_score, reasons = policy_engine.evaluate(
+        phishing_probability=phishing_prob,
+        evidence=evidence,
+        static_features=features,
+    )
+
+    result = AnalysisResult(
         url=body.url,
         normalized_url=normalized_url,
         scan_mode=ScanMode.QUICK,
-        verdict=Verdict.SUSPICIOUS,
-        action=Action.WARN,
-        risk_score=50,
-        phishing_probability=None,
-        evidence=Evidence(),
-        reasons=["ML model unavailable; using static analysis only"],
+        verdict=verdict,
+        action=action,
+        risk_score=risk_score,
+        phishing_probability=phishing_prob,
+        model_version=settings.model_version if phishing_prob is not None else None,
+        evidence=evidence,
+        reasons=reasons,
+        cached=False,
     )
+
+    # 6. Cache result
+    if cache:
+        cache.set(ScanMode.QUICK, normalized_url, result)
+
+    return result
 
 
 @router.post(

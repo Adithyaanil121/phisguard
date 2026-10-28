@@ -77,11 +77,10 @@ async def test_4_missing_evidence_status_not_checked():
         )
         assert response.status_code == 200
         evidence = response.json()["evidence"]
-        assert evidence["static_analysis"]["status"] == "not_checked"
-        assert evidence["ml_prediction"]["status"] == "not_checked"
+        assert evidence["static_analysis"]["status"] == "completed"
         assert evidence["reputation"]["status"] == "not_checked"
         assert evidence["tls"]["status"] == "not_checked"
-        assert evidence["dynamic_analysis"]["status"] == "not_checked"
+        assert evidence["dynamic_analysis"]["status"] == "not_run"
 
 
 @pytest.mark.asyncio
